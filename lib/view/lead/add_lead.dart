@@ -122,6 +122,9 @@ class _AddLeadState extends State<AddLead> {
     _showResponseAlert(response);
   }
 
+  late Alert _currentAlert;
+
+
   void _showResponseAlert(Map<String, dynamic> response) {
     bool status = response['status'] ?? false;
     String title = status ? "Done!" : "Ohh..!";
@@ -138,23 +141,27 @@ class _AddLeadState extends State<AddLead> {
     _selectedPartner = null;
     _isCityEnabled = false;
     _clearErrors();
-    Alert(
+
+    _currentAlert = Alert(
       context: context,
       type: status ? AlertType.success : AlertType.info,
       title: title,
-      content: Center(child: Text(response['message'],style: TextStyle(fontSize: 18),)),
+      content: Center(child: Text(response['message'], style: TextStyle(fontSize: 18),)),
       buttons: [
         DialogButton(
           child: Text(
             "OKAY",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.push(
-            context,
-            status
-                ? MaterialPageRoute(builder: (context) => LeadList())
-                : MaterialPageRoute(builder: (context) => AddLead()),
-          ),
+          onPressed: () {
+            _currentAlert?.dismiss();
+            Navigator.push(
+              context,
+              status
+                  ? MaterialPageRoute(builder: (context) => LeadList())
+                  : MaterialPageRoute(builder: (context) => AddLead()),
+            );
+          },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
             Color.fromRGBO(52, 138, 199, 1.0)
@@ -162,7 +169,14 @@ class _AddLeadState extends State<AddLead> {
           width: 120,
         )
       ],
-    ).show();
+    );
+    _currentAlert.show();
+  }
+
+  @override
+  void dispose() {
+    _currentAlert.dismiss();
+    super.dispose();
   }
 
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DescriptionCard extends StatefulWidget {
-  final Map<String, String> item;
+  final Map<String, dynamic> item;
 
   const DescriptionCard({required this.item});
 
@@ -29,24 +29,39 @@ class _DescriptionCardState extends State<DescriptionCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Flexible(
-                  child: Text(
-                    'Status: ${widget.item['title']!}',
-                    style: TextStyle(
-                      fontSize: 16.0,
+                // Flexible(
+                //   child: Text(
+                //     'Status: ${widget.item['user_id']!}',
+                //     style: TextStyle(
+                //       fontSize: 16.0,
+                //       fontWeight: FontWeight.bold,
+                //     ),
+                //     overflow: TextOverflow.ellipsis,
+                //   ),
+                // ),
+                Text(
+                  'Date :',
+                  style: TextStyle(
+                    fontSize: 16.0,
                       fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                    color: Colors.grey.shade800
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 SizedBox(width: 16.0),
                 Text(
-                  'Date: ${widget.item['date']!}',
+                  (widget.item['created_at']?.toString() ==
+                      'null' ||
+                      widget.item['created_at'] == null)
+                      ? 'Not Found'
+                      : widget.item['created_at']
+                      .toString()
+                      .substring(0, 10),
                   style: TextStyle(
                     fontSize: 16.0,
-                    color: Colors.grey,
+                    color: Colors.grey.shade700,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -55,7 +70,7 @@ class _DescriptionCardState extends State<DescriptionCard> {
             SizedBox(height: 8.0),
             Text(
               'Description:',
-              style: TextStyle(fontSize: 16.0, color: Colors.grey),
+              style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.bold, color: Colors.grey.shade800),
             ),
             SizedBox(height: 4.0),
             GestureDetector(
@@ -69,8 +84,13 @@ class _DescriptionCardState extends State<DescriptionCard> {
                 children: [
                   if (showFullDescription)
                     Text(
-                      widget.item['description']!,
-                      style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                      (widget.item['description']?.toString() ==
+                          'null' ||
+                          widget.item['description'] == null)
+                          ? 'Not Found'
+                          : widget.item['description']
+                          .toString(),
+                      style: TextStyle(fontSize: 16.0, color: Colors.grey.shade700),
                     )
                   else
                     Text(

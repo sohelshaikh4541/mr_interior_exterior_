@@ -645,4 +645,28 @@ class StatesServices {
       throw Exception('Error: $e');
     }
   }
+
+  Future<List<dynamic>> getLeadLog(String leadId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(AppConstant.getLeadLogs),
+        body: {'lead_id': leadId},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        print('Data received: $data');
+        if (data.containsKey('lead')) {
+          return data['lead'] as List<dynamic>;
+        } else {
+          throw Exception('Key "data" not found in response');
+        }
+      } else {
+        throw Exception('Error Fetching Data');
+      }
+    } on SocketException {
+      throw Exception('No Internet');
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
 }

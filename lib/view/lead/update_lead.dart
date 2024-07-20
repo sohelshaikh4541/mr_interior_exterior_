@@ -283,6 +283,8 @@ class _UpdateLeadState extends State<UpdateLead> {
     _showResponseAlert(response);
   }
 
+  late Alert _currentAlert;
+
   void _showResponseAlert(Map<String, dynamic> response) {
     bool status = response['status'] ?? false;
     String title = status ? "Done!" : "Ohh..!";
@@ -290,13 +292,16 @@ class _UpdateLeadState extends State<UpdateLead> {
     _mobileController.clear();
     _emailController.clear();
     _addressController.clear();
+    _pincodeController.clear();
+    _endDateController.clear();
     _selectedState = null;
     _selectedCity = null;
     _selectedSources = null;
     _selectedSourceId = null;
     _isCityEnabled = false;
+    _selectedPartner = null;
     _clearErrors();
-    Alert(
+    _currentAlert = Alert(
       context: context,
       type: status ? AlertType.success : AlertType.info,
       title: title,
@@ -311,12 +316,15 @@ class _UpdateLeadState extends State<UpdateLead> {
             "OKAY",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.push(
-            context,
-            status
-                ? MaterialPageRoute(builder: (context) => LeadList())
-                : MaterialPageRoute(builder: (context) => LeadList()),
-          ),
+          onPressed: () {
+            _currentAlert?.dismiss();
+            Navigator.push(
+              context,
+              status
+                  ? MaterialPageRoute(builder: (context) => LeadList())
+                  : MaterialPageRoute(builder: (context) => LeadList()),
+            );
+          },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
             Color.fromRGBO(52, 138, 199, 1.0)
@@ -324,8 +332,16 @@ class _UpdateLeadState extends State<UpdateLead> {
           width: 120,
         )
       ],
-    ).show();
+    );
+    _currentAlert.show();
   }
+
+  @override
+  void dispose() {
+    _currentAlert.dismiss();
+    super.dispose();
+  }
+
 
   void _submitForm() {
     setState(() {

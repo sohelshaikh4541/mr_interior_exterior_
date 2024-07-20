@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class UpdateCustomer extends StatefulWidget {
   int? id;
-  String? mobileNo, name, address,email, sourceName, city, state, date, zip;
+  String? mobileNo, name, address, email, sourceName, city, state, date, zip;
 
   UpdateCustomer(
       {this.id,
@@ -23,6 +23,7 @@ class UpdateCustomer extends StatefulWidget {
       this.state,
       this.date,
       this.zip});
+
   @override
   State<UpdateCustomer> createState() => _UpdateCustomerState();
 }
@@ -78,7 +79,9 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
     if (widget.state != null) {
       final states = await _fetchState('');
       setState(() {
-        _selectedState = states.firstWhere((state) => state.name == widget.state, orElse: () => DropdownItem(id: -1, name: 'Select State'));
+        _selectedState = states.firstWhere(
+            (state) => state.name == widget.state,
+            orElse: () => DropdownItem(id: -1, name: 'Select State'));
         _selectedStateId = _selectedState?.id;
         _isCityEnabled = _selectedState != null && _selectedState!.id != -1;
       });
@@ -86,13 +89,16 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
       if (_selectedState != null && widget.city != null) {
         final cities = await _fetchCity('', _selectedState!.id!);
         setState(() {
-          _selectedCity = cities.firstWhere((city) => city.name == widget.city, orElse: () => DropdownItem(id: -1, name: 'Select City'));
+          _selectedCity = cities.firstWhere((city) => city.name == widget.city,
+              orElse: () => DropdownItem(id: -1, name: 'Select City'));
         });
       }
 
       final sources = await _fetchLeadSources('');
       setState(() {
-        _selectedSources = sources.firstWhere((source) => source.name == widget.sourceName, orElse: () => DropdownItem(id: -1, name: 'Select Source'));
+        _selectedSources = sources.firstWhere(
+            (source) => source.name == widget.sourceName,
+            orElse: () => DropdownItem(id: -1, name: 'Select Source'));
         _selectedSourceId = _selectedSources?.id;
       });
     }
@@ -187,7 +193,15 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
 
     StatesServices statesServices = StatesServices();
     Map<String, dynamic> response = await statesServices.updateClient(
-        widget.id.toString(), name, email, mobileNo, address, pincode, city, state, sources);
+        widget.id.toString(),
+        name,
+        email,
+        mobileNo,
+        address,
+        pincode,
+        city,
+        state,
+        sources);
 
     setState(() {
       _response = response;
@@ -196,6 +210,8 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
 
     _showResponseAlert(response);
   }
+
+  late Alert _currentAlert;
 
   void _showResponseAlert(Map<String, dynamic> response) {
     bool status = response['status'] ?? false;
@@ -210,7 +226,7 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
     _selectedSourceId = null;
     _isCityEnabled = false;
     _clearErrors();
-    Alert(
+    _currentAlert = Alert(
       context: context,
       type: status ? AlertType.success : AlertType.info,
       title: title,
@@ -225,12 +241,14 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
             "OKAY",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.push(
-            context,
-            status
-                ? MaterialPageRoute(builder: (context) => CustomerList())
-                : MaterialPageRoute(builder: (context) => CustomerList()),
-          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              status
+                  ? MaterialPageRoute(builder: (context) => CustomerList())
+                  : MaterialPageRoute(builder: (context) => CustomerList()),
+            );
+          },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
             Color.fromRGBO(52, 138, 199, 1.0)
@@ -238,7 +256,14 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
           width: 120,
         )
       ],
-    ).show();
+    );
+    _currentAlert.show();
+  }
+
+  @override
+  void dispose() {
+    _currentAlert.dismiss();
+    super.dispose();
   }
 
   void _submitForm() {
@@ -282,7 +307,10 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
     final w = MediaQuery.sizeOf(context).width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Client',style: TextStyle(fontWeight: FontWeight.bold),),
+        title: Text(
+          'Client',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Color(0xFFFFA500),
         elevation: 5,
         leading: IconButton(
@@ -442,7 +470,7 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
                               fillColor: Colors.white,
                               contentPadding: EdgeInsets.only(left: 20),
                               hintStyle:
-                              TextStyle(fontSize: 16, color: Colors.black),
+                                  TextStyle(fontSize: 16, color: Colors.black),
                             ),
                             baseStyle: TextStyle(
                               fontSize: 16,

@@ -41,6 +41,7 @@ class _LeadDetailsState extends State<LeadDetails> {
   final FocusNode _focusNode = FocusNode();
   bool _isFocused = false;
   DropdownItem? _selectedStatus;
+  DropdownItem? _selectedPaymentType;
   DateTime? selectedDateTime;
   DateTime toDate = DateTime.now();
   bool isLoading = false;
@@ -49,6 +50,7 @@ class _LeadDetailsState extends State<LeadDetails> {
   bool _statusError = false;
   bool _showErrors = false;
   String errorMessage = '', errorDesMessage = '';
+  DropdownItem? _selectedPayment;
 
   String date = '', description = '', tokenAmount = '', status = '';
   final List<String> noteTypes = [
@@ -65,12 +67,6 @@ class _LeadDetailsState extends State<LeadDetails> {
   late TextEditingController _tokenController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   Map<String, dynamic> _response = {};
-
-  final List<Map<String, String>> items = [
-    {'title': 'Active', 'date': '2023-07-01', 'description': 'Description 1gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg'},
-    {'title': 'Active', 'date': '2023-07-02', 'description': 'Description 2'},
-    {'title': 'Active', 'date': '2023-07-03', 'description': 'Description 3'},
-  ];
 
   void _showNoteCountDialog(BuildContext context, String noteType) {
     final TextEditingController noteCountController = TextEditingController();
@@ -133,6 +129,42 @@ class _LeadDetailsState extends State<LeadDetails> {
     );
   }
 
+  final List<Map<String, String>> items = [
+    {'title': 'Active', 'date': '2023-07-01', 'description': 'Description 1'},
+    {'title': 'Active', 'date': '2023-07-02', 'description': 'Description 2'},
+    {'title': 'Active', 'date': '2023-07-03', 'description': 'Description 3'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
+    fetchLeadLog();
+  }
+
+  late List<dynamic> leadLog = [];
+  bool isLoading_ = true;
+
+  Future<void> fetchLeadLog() async {
+    StatesServices statesServices = StatesServices();
+    try {
+      final startTime = DateTime.now();
+      leadLog = await statesServices.getLeadLog('1');
+      final endTime = DateTime.now();
+      print('Data fetched in ${endTime.difference(startTime).inSeconds} seconds');
+    } catch (e) {
+      print('Error fetching lead log: $e');
+    } finally {
+      setState(() {
+        isLoading_ = false;
+      });
+    }
+  }
+
   void _submitForm() {
     setState(() {
       _showErrors = true;
@@ -176,6 +208,27 @@ class _LeadDetailsState extends State<LeadDetails> {
     if (_formValid && _formKey.currentState!.validate()) {
       print('tehfehehrh');
       _updateLead();
+    }
+  }
+
+  Future<List<DropdownItem>> _fetchPaymentType(String filter) async {
+    final paayment_type = await StatesServices().getPaymentType();
+    if (paayment_type.status != true) {
+      return [DropdownItem(id: -1, name: 'No data found')];
+    }
+    final payments = paayment_type.data ?? [];
+    if (filter.isEmpty) {
+      return payments
+          .map((payment) => DropdownItem(
+          id: payment.id!, name: payment.paymentType ?? 'Unknown Source'))
+          .toList();
+    } else {
+      return payments
+          .where((payment) =>
+      payment.paymentType != null &&
+          payment.paymentType!.toLowerCase().contains(filter.toLowerCase()))
+          .map((client) => DropdownItem(id: client.id!, name: client.paymentType!))
+          .toList();
     }
   }
 
@@ -258,16 +311,6 @@ class _LeadDetailsState extends State<LeadDetails> {
       errorMessage = '';
       setState(() {});
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
-    });
   }
 
   @override
@@ -1051,12 +1094,12 @@ class _LeadDetailsState extends State<LeadDetails> {
                             ),
                             onChanged: (DropdownItem? value) {
                               setState(() {
-                                _selectedStatus = value;
-                                statuss = value?.id ?? 0;
-                                _statusError = false;
+                                // _selectedPaymentType = value;
+                                // _selectedPaymentTypeId = value?.id;
+                                // _paymentError = false;
                               });
                             },
-                            selectedItem: _selectedStatus,
+                            selectedItem: _selectedPaymentType,
                             popupProps: PopupProps.menu(
                               showSearchBox: true,
                               searchFieldProps: TextFieldProps(
@@ -1094,7 +1137,7 @@ class _LeadDetailsState extends State<LeadDetails> {
                               ),
                             ),
                             asyncItems: (String filter) async {
-                              return await _fetchLeadStatus(filter);
+                              return await _fetchPaymentType(filter);
                             },
                           ),
                         ),
@@ -1290,10 +1333,13 @@ class _LeadDetailsState extends State<LeadDetails> {
                     Text('Previous Updates History',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
                     Container(
                       height: 400,
-                      child: PageView.builder(
-                        itemCount: items.length,
+                      child: leadLog.isEmpty
+                          ? Center(child: CircularProgressIndicator()) // Show a loading indicator while fetching data
+                          : PageView.builder(
+                        itemCount: leadLog.length,
                         itemBuilder: (context, index) {
-                          return DescriptionCard(item: items[index]);
+                          print('enter${leadLog.length}');
+                          return DescriptionCard(item: leadLog[index]);
                         },
                       ),
                     ),

@@ -70,7 +70,8 @@ class UserHome extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    elevation: 10, // Add elevation for shadow
+                    elevation: 10,
+                    // Add elevation for shadow
                     shadowColor: Colors.black,
                   ),
                   onPressed: () {
@@ -80,7 +81,9 @@ class UserHome extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 10,),
+          SizedBox(
+            height: 10,
+          ),
           Padding(
             padding: const EdgeInsets.only(left: 30),
             child: InkWell(

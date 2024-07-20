@@ -23,4 +23,5 @@ class AppConstant {
   static const String getPaymentType = baseUrl + 'get_payment_type';
   static const String getPackageDeduction = baseUrl + 'get_decuction_item';
   static const String getPromotionalBanner = baseUrl + 'promotional_banner';
+  static const String getLeadLogs = baseUrl + 'get_lead_logs';
 }

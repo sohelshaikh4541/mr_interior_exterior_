@@ -28,6 +28,8 @@ class _AddCustomerState extends State<AddCustomer> {
 
   Map<String, dynamic> _response = {};
 
+  late Alert _currentAlert;
+
   String name = '',
       mobileNo = '',
       email = '',
@@ -173,7 +175,7 @@ class _AddCustomerState extends State<AddCustomer> {
     _selectedPartner = null;
     _isCityEnabled = false;
     _clearErrors();
-    Alert(
+    _currentAlert = Alert(
       context: context,
       type: status ? AlertType.success : AlertType.info,
       title: title,
@@ -188,12 +190,15 @@ class _AddCustomerState extends State<AddCustomer> {
             "OKAY",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.push(
-            context,
-            status
-                ? MaterialPageRoute(builder: (context) => CustomerList())
-                : MaterialPageRoute(builder: (context) => AddCustomer()),
-          ),
+          onPressed: () {
+            _currentAlert?.dismiss();
+            Navigator.push(
+              context,
+              status
+                  ? MaterialPageRoute(builder: (context) => CustomerList())
+                  : MaterialPageRoute(builder: (context) => AddCustomer()),
+            );
+          },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
             Color.fromRGBO(52, 138, 199, 1.0)
@@ -201,7 +206,14 @@ class _AddCustomerState extends State<AddCustomer> {
           width: 120,
         )
       ],
-    ).show();
+    );
+    _currentAlert.show();
+  }
+
+  @override
+  void dispose() {
+    _currentAlert.dismiss();
+    super.dispose();
   }
 
   void _submitForm() {

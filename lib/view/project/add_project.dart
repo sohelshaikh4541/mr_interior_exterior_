@@ -56,6 +56,9 @@ class _AddProjectState extends State<AddProject> {
   bool _cityError = false;
   bool _packageTypeError = false;
 
+  List<String> productArray = [];
+  List<dynamic> countArray = [];
+
   String errorDesMessage = '';
   bool isLoading = false;
   DropdownItem? _selectedState;
@@ -316,6 +319,17 @@ class _AddProjectState extends State<AddProject> {
   }
 
   void _submitForm() {
+
+    productArray.clear();
+    countArray.clear();
+
+    selectedProduct.forEach((product, count) {
+      productArray.add(product);
+      countArray.addAll(count);
+    });
+
+    print('Axcxasdwed $productArray');
+    print('Axcxasdwedwssw $countArray');
     setState(() {
       _showErrors = true;
       _packageError = _selectedPackage == null;
