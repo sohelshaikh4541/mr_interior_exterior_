@@ -273,12 +273,7 @@ class _AddCustomerState extends State<AddCustomer> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BottomNavBar(),
-              ),
-            );
+            Navigator.pop(context);
           },
         ),
       ),

@@ -242,6 +242,7 @@ class _UpdateCustomerState extends State<UpdateCustomer> {
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           onPressed: () {
+            _currentAlert?.dismiss();
             Navigator.push(
               context,
               status
