@@ -167,7 +167,7 @@ class _UpdateLeadState extends State<UpdateLead> {
         _selectedPartner = partners.firstWhere(
             (partner) => partner.name == widget.partner,
             orElse: () => DropdownItem(id: -1, name: 'Select Partner'));
-        _selectedSourceId = _selectedSources?.id;
+        _selectedPartnerId = _selectedSources?.id;
       });
     }
   }
@@ -261,8 +261,11 @@ class _UpdateLeadState extends State<UpdateLead> {
     sources = _selectedSourceId.toString();
     partner = _selectedPartnerId.toString();
 
+    print('PartnerId$partner');
+
     StatesServices statesServices = StatesServices();
     Map<String, dynamic> response = await statesServices.updateLead(
+      userId,
       widget.id.toString(),
       name,
       email,

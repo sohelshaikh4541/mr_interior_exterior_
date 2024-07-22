@@ -246,6 +246,7 @@ class StatesServices {
   }
 
   Future<Map<String, dynamic>> updateLead(
+      String userId,
       String leadId,
       String name,
       String email,
@@ -261,6 +262,7 @@ class StatesServices {
       final response = await http.post(
         Uri.parse(AppConstant.updateLead),
         body: {
+          'userId': userId,
           'id': leadId,
           'name': name,
           'email': email,
@@ -292,6 +294,7 @@ class StatesServices {
   }
 
   Future<Map<String, dynamic>> updateLeadbySales(
+      String userId,
     String leadId,
     String mobileNo,
     String date,
@@ -302,6 +305,7 @@ class StatesServices {
       final response = await http.post(
         Uri.parse(AppConstant.updateLead),
         body: {
+          'userId': userId,
           'id': leadId,
           'mobile_no': mobileNo,
           'state': date,

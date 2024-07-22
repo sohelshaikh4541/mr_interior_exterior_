@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:interior_v_1/helper/custome_colour.dart';
 import 'package:interior_v_1/widget/text_form_y.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/apiServices.dart';
 import '../../helper/deiscription_card.dart';
@@ -48,11 +49,12 @@ class _LeadDetailsState extends State<LeadDetails> {
   bool _formValid = false;
   int statuss = 1;
   bool _statusError = false;
+  bool _paymentTypeError = false;
   bool _showErrors = false;
-  String errorMessage = '', errorDesMessage = '';
+  String errorMessage = '', errorDesMessage = '', userId = '';
   DropdownItem? _selectedPayment;
 
-  String date = '', description = '', tokenAmount = '', status = '';
+  String date = '', description = '', tokenAmount = '', status = '',_selectedPaymentTypeId='';
   final List<String> noteTypes = [
     'Rs. 50',
     'Rs. 100',
@@ -143,7 +145,15 @@ class _LeadDetailsState extends State<LeadDetails> {
         _isFocused = _focusNode.hasFocus;
       });
     });
+    _loadUser();
     fetchLeadLog();
+  }
+
+  Future<void> _loadUser() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    setState(() {
+      userId = sp.getString('userid') ?? '';
+    });
   }
 
   late List<dynamic> leadLog = [];
@@ -155,7 +165,8 @@ class _LeadDetailsState extends State<LeadDetails> {
       final startTime = DateTime.now();
       leadLog = await statesServices.getLeadLog('1');
       final endTime = DateTime.now();
-      print('Data fetched in ${endTime.difference(startTime).inSeconds} seconds');
+      print(
+          'Data fetched in ${endTime.difference(startTime).inSeconds} seconds');
     } catch (e) {
       print('Error fetching lead log: $e');
     } finally {
@@ -220,14 +231,15 @@ class _LeadDetailsState extends State<LeadDetails> {
     if (filter.isEmpty) {
       return payments
           .map((payment) => DropdownItem(
-          id: payment.id!, name: payment.paymentType ?? 'Unknown Source'))
+              id: payment.id!, name: payment.paymentType ?? 'Unknown Source'))
           .toList();
     } else {
       return payments
           .where((payment) =>
-      payment.paymentType != null &&
-          payment.paymentType!.toLowerCase().contains(filter.toLowerCase()))
-          .map((client) => DropdownItem(id: client.id!, name: client.paymentType!))
+              payment.paymentType != null &&
+              payment.paymentType!.toLowerCase().contains(filter.toLowerCase()))
+          .map((client) =>
+              DropdownItem(id: client.id!, name: client.paymentType!))
           .toList();
     }
   }
@@ -244,6 +256,7 @@ class _LeadDetailsState extends State<LeadDetails> {
     print(description);
     StatesServices statesServices = StatesServices();
     Map<String, dynamic> response = await statesServices.updateLeadbySales(
+      userId,
       widget.id.toString(),
       widget.mobileNo.toString(),
       status,
@@ -257,6 +270,8 @@ class _LeadDetailsState extends State<LeadDetails> {
     _showResponseAlert(response);
   }
 
+  late Alert _currentAlert;
+
   void _showResponseAlert(Map<String, dynamic> response) {
     bool status = response['status'] ?? false;
     String title = status ? "Done!" : "Ohh..!";
@@ -266,7 +281,7 @@ class _LeadDetailsState extends State<LeadDetails> {
     _selectedStatus = null;
     _showErrors = false;
     // _clearErrors();
-    Alert(
+    _currentAlert = Alert(
       context: context,
       type: status ? AlertType.success : AlertType.info,
       title: title,
@@ -281,12 +296,15 @@ class _LeadDetailsState extends State<LeadDetails> {
             "OKAY",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
-          onPressed: () => Navigator.push(
-            context,
-            status
-                ? MaterialPageRoute(builder: (context) => LeadList())
-                : MaterialPageRoute(builder: (context) => LeadList()),
-          ),
+          onPressed: () {
+            _currentAlert?.dismiss();
+            Navigator.push(
+              context,
+              status
+                  ? MaterialPageRoute(builder: (context) => LeadList())
+                  : MaterialPageRoute(builder: (context) => LeadList()),
+            );
+          },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
             Color.fromRGBO(52, 138, 199, 1.0)
@@ -294,7 +312,15 @@ class _LeadDetailsState extends State<LeadDetails> {
           width: 120,
         )
       ],
-    ).show();
+    );
+    _currentAlert.show();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _currentAlert.dismiss();
+    super.dispose();
   }
 
   Future<void> _selectToDate(BuildContext context) async {
@@ -311,12 +337,6 @@ class _LeadDetailsState extends State<LeadDetails> {
       errorMessage = '';
       setState(() {});
     }
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
   }
 
   Future<List<DropdownItem>> _fetchLeadStatus(String filter) async {
@@ -349,7 +369,10 @@ class _LeadDetailsState extends State<LeadDetails> {
       length: 1,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Lead',style: TextStyle(fontWeight: FontWeight.bold),),
+          title: Text(
+            'Lead',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           backgroundColor: Color(0xFFFFA500),
           elevation: 5,
           leading: IconButton(
@@ -1028,10 +1051,12 @@ class _LeadDetailsState extends State<LeadDetails> {
                         ),
                       ],
                     ),
-                    SizedBox(
+                    if (statuss == 3)
+                      SizedBox(
                       height: 10,
                     ),
-                    Column(
+                    if (statuss == 3)
+                      Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (_statusError)
@@ -1094,9 +1119,9 @@ class _LeadDetailsState extends State<LeadDetails> {
                             ),
                             onChanged: (DropdownItem? value) {
                               setState(() {
-                                // _selectedPaymentType = value;
-                                // _selectedPaymentTypeId = value?.id;
-                                // _paymentError = false;
+                                _selectedPaymentType = value;
+                                _selectedPaymentTypeId = value!.name;
+                                _paymentTypeError = false;
                               });
                             },
                             selectedItem: _selectedPaymentType,
@@ -1162,11 +1187,30 @@ class _LeadDetailsState extends State<LeadDetails> {
                         keyboardType: TextInputType.number,
                         maxLength: 10,
                       ),
-                    if (statuss == 3)
+                    if (_selectedPaymentTypeId != 'Cash' && statuss==3)
+                      SizedBox(
+                      height: 10,
+                    ),
+                    if (_selectedPaymentTypeId != 'Cash' && statuss==3)
+                      CustomTextField(
+                        controller: _tokenController,
+                        hintText: 'Enter Transaction Id',
+                        icon: Icons.confirmation_number_outlined,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please Enter Transaction Id';
+                          }
+                          return null;
+                        },
+                        showError: _showErrors,
+                        keyboardType: TextInputType.number,
+                        maxLength: 10,
+                      ),
+                    if (_selectedPaymentTypeId == 'Cash'  && statuss==3)
                       SizedBox(
                         height: 10,
                       ),
-                    if (statuss == 3)
+                    if (_selectedPaymentTypeId == 'Cash'  && statuss==3)
                       Container(
                         height: 48,
                         width: w * 0.903,
@@ -1206,10 +1250,10 @@ class _LeadDetailsState extends State<LeadDetails> {
                               fillColor: Colors.white,
                               contentPadding: EdgeInsets.only(left: 20),
                               hintStyle:
-                              TextStyle(fontSize: 16, color: Colors.black),
+                                  TextStyle(fontSize: 16, color: Colors.black),
                             ),
                             baseStyle:
-                            TextStyle(fontSize: 16, color: Colors.black),
+                                TextStyle(fontSize: 16, color: Colors.black),
                           ),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
@@ -1244,7 +1288,7 @@ class _LeadDetailsState extends State<LeadDetails> {
                             itemBuilder: (context, item, isSelected) {
                               return ListTile(
                                 title:
-                                Text(item, style: TextStyle(fontSize: 16)),
+                                    Text(item, style: TextStyle(fontSize: 16)),
                                 trailing: Checkbox(
                                   value: selectedNotes.containsKey(item),
                                   onChanged: (bool? checked) {
@@ -1330,18 +1374,24 @@ class _LeadDetailsState extends State<LeadDetails> {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Text('Previous Updates History',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 15),),
+                    Text(
+                      'Previous Updates History',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
                     Container(
                       height: 400,
                       child: leadLog.isEmpty
-                          ? Center(child: CircularProgressIndicator()) // Show a loading indicator while fetching data
+                          ? Center(
+                              child:
+                                  CircularProgressIndicator()) // Show a loading indicator while fetching data
                           : PageView.builder(
-                        itemCount: leadLog.length,
-                        itemBuilder: (context, index) {
-                          print('enter${leadLog.length}');
-                          return DescriptionCard(item: leadLog[index]);
-                        },
-                      ),
+                              itemCount: leadLog.length,
+                              itemBuilder: (context, index) {
+                                print('enter${leadLog.length}');
+                                return DescriptionCard(item: leadLog[index]);
+                              },
+                            ),
                     ),
                   ],
                 ),

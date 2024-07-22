@@ -31,4 +31,3 @@ class MyApp extends StatelessWidget {
 
 
 //Author :- Sohel Shaikh (Software)
-//Author :- Sohel Shaikh (Developer)
